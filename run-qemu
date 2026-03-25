@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#set -x
 
 # Configurable variables — all can be overridden via environment variables
 FUJINET_FIRMWARE_PATH=${FUJINET_FIRMWARE_PATH:-../fujinet-firmware}
@@ -64,7 +65,7 @@ if [[ "$(readlink fujinet)" != "$FUJINET_DISTFILES" ]]; then
 fi
 
 if [[ "$PKILL_ENABLED" == "true" ]]; then
-    pkill -f fujinet
+    pkill -f run-fujinet
 fi
 
 # Update the BOIP port in fnconfig.ini
