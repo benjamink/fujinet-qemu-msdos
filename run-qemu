@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+set -x
+
+# Configurable variables — all can be overridden via environment variables
+FUJINET_FIRMWARE_PATH=${FUJINET_FIRMWARE_PATH:-$HOME/code/fujinet-firmware}
+PKILL_ENABLED=${PKILL_ENABLED:-true}
+MEMORY=${MEMORY:-64}
+HDA=${HDA:-msdos.qcow2}
+FUJINET_PORT=${FUJINET_PORT:-65504}
+FDA=${FDA:-}
+BOOT=${BOOT:-c}
+
+usage() {
+    cat <<EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Start FujiNet and launch QEMU for MS-DOS emulation.
+
+Options:
+  -m, --memory <MB>       RAM for the QEMU machine (env: MEMORY, default: 64)
+      --hda <image>       Hard disk image (env: HDA, default: msdos.qcow2)
+      --fda <image>       Floppy disk image (env: FDA, default: none)
+      --boot <device>     Boot device: c=hard disk, a=floppy (env: BOOT, default: c)
+      --fujinet-path <p>  Path to fujinet-firmware repo (env: FUJINET_FIRMWARE_PATH,
+                          default: ~/code/fujinet-firmware)
+      --no-pkill          Skip killing existing fujinet processes
+                          (env: PKILL_ENABLED=false)
+  -h, --help              Show this help message
+EOF
+}
+
+# Parse flags
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -m|--memory)
+            MEMORY=$2; shift 2 ;;
+        --hda)
+            HDA=$2; shift 2 ;;
+        --fda)
+            FDA=$2; shift 2 ;;
+        --boot)
+            BOOT=$2; shift 2 ;;
+        --fujinet-path)
+            FUJINET_FIRMWARE_PATH=$2; shift 2 ;;
+        --no-pkill)
+            PKILL_ENABLED=false; shift ;;
+        -h|--help)
+            usage; exit 0 ;;
+        *)
+            echo "Unknown option: $1" >&2
+            echo >&2
+            usage >&2
+            exit 1 ;;
+    esac
+done
+
+# Ensure fujinet symlink points to the configured firmware distfiles
+FUJINET_DISTFILES="$FUJINET_FIRMWARE_PATH/build/dist"
+if [[ "$(readlink fujinet)" != "$FUJINET_DISTFILES" ]]; then
+    rm -f fujinet
+    ln -s "$FUJINET_DISTFILES" fujinet
+fi
+
+if [[ "$PKILL_ENABLED" == "true" ]]; then
+    pkill -f fujinet
+fi
+
+# Update the BOIP port in fnconfig.ini
+sed -i "/^\[BOIP\]/,/^\[/{s/^port=.*/port=$FUJINET_PORT/}" fujinet/fnconfig.ini
+
+# Start FujiNet in the background
+(cd fujinet && ./run-fujinet) &
+FUJINET_PID=$!
+trap 'kill "$FUJINET_PID" 2>/dev/null' EXIT
+
+# Wait for FujiNet to be ready (listening on configured port)
+echo "Waiting for FujiNet to start..."
+while ! nc -z localhost "$FUJINET_PORT" 2>/dev/null; do
+    sleep 0.5
+done
+echo "FujiNet started."
+
+QEMU_ARGS=(-hda "$HDA" -m "$MEMORY" -L .
+    -chardev socket,id=fujinet,host=localhost,port="$FUJINET_PORT",reconnect-ms=1000
+    -serial chardev:fujinet
+    -boot "$BOOT")
+
+[[ -n "$FDA" ]] && QEMU_ARGS+=(-fda "$FDA")
+
+qemu-system-i386 "${QEMU_ARGS[@]}"
