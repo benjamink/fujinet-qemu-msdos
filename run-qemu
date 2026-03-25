@@ -2,7 +2,7 @@
 set -x
 
 # Configurable variables — all can be overridden via environment variables
-FUJINET_FIRMWARE_PATH=${FUJINET_FIRMWARE_PATH:-$HOME/code/fujinet-firmware}
+FUJINET_FIRMWARE_PATH=${FUJINET_FIRMWARE_PATH:-../fujinet-firmware}
 PKILL_ENABLED=${PKILL_ENABLED:-true}
 MEMORY=${MEMORY:-64}
 HDA=${HDA:-msdos.qcow2}
