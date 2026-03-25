@@ -13,12 +13,12 @@ Key options (all can also be set via environment variables of the same name):
 | Flag | Env var | Default | Description |
 |---|---|---|---|
 | `-m`, `--memory` | `MEMORY` | `64` | RAM in MB for the QEMU machine |
-| `--hda` | `HDA` | `msdos.qcow2` | Hard disk image path |
-| `--fda` | `FDA` | _(none)_ | Floppy disk image path |
-| `--boot` | `BOOT` | `c` | Boot device (`c` = hard disk, `a` = floppy) |
-| `--fujinet-path` | `FUJINET_FIRMWARE_PATH` | `../fujinet-firmware` | Path to the fujinet-firmware repo |
-| `--no-pkill` | `PKILL_ENABLED=false` | _(pkill enabled)_ | Skip killing existing fujinet processes |
-| — | `FUJINET_PORT` | `65504` | FujiNet network port |
+| `-d`, `--hda` | `HDA` | `msdos.qcow2` | Hard disk image path |
+| `-f`, `--fda` | `FDA` | _(none)_ | Floppy disk image path |
+| `-b`, `--boot` | `BOOT` | `c` | Boot device (`c` = hard disk, `a` = floppy) |
+| `-p`, `--port` | `FUJINET_PORT` | `65504` | FujiNet network port |
+| `-F`, `--fujinet-path` | `FUJINET_FIRMWARE_PATH` | `../fujinet-firmware` | Path to the fujinet-firmware repo |
+| `-n`, `--no-pkill` | `PKILL_ENABLED=false` | _(pkill enabled)_ | Skip killing existing fujinet processes |
 
 Examples:
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -x
 
 # Configurable variables — all can be overridden via environment variables
 FUJINET_FIRMWARE_PATH=${FUJINET_FIRMWARE_PATH:-../fujinet-firmware}
@@ -18,12 +17,13 @@ Start FujiNet and launch QEMU for MS-DOS emulation.
 
 Options:
   -m, --memory <MB>       RAM for the QEMU machine (env: MEMORY, default: 64)
-      --hda <image>       Hard disk image (env: HDA, default: msdos.qcow2)
-      --fda <image>       Floppy disk image (env: FDA, default: none)
-      --boot <device>     Boot device: c=hard disk, a=floppy (env: BOOT, default: c)
-      --fujinet-path <p>  Path to fujinet-firmware repo (env: FUJINET_FIRMWARE_PATH,
-                          default: ~/code/fujinet-firmware)
-      --no-pkill          Skip killing existing fujinet processes
+  -d, --hda <image>       Hard disk image (env: HDA, default: msdos.qcow2)
+  -f, --fda <image>       Floppy disk image (env: FDA, default: none)
+  -b, --boot <device>     Boot device: c=hard disk, a=floppy (env: BOOT, default: c)
+  -p, --port <port>       FujiNet network port (env: FUJINET_PORT, default: 65504)
+  -F, --fujinet-path <p>  Path to fujinet-firmware repo (env: FUJINET_FIRMWARE_PATH,
+                          default: ../fujinet-firmware)
+  -n, --no-pkill          Skip killing existing fujinet processes
                           (env: PKILL_ENABLED=false)
   -h, --help              Show this help message
 EOF
@@ -34,15 +34,17 @@ while [[ $# -gt 0 ]]; do
     case $1 in
         -m|--memory)
             MEMORY=$2; shift 2 ;;
-        --hda)
+        -d|--hda)
             HDA=$2; shift 2 ;;
-        --fda)
+        -f|--fda)
             FDA=$2; shift 2 ;;
-        --boot)
+        -b|--boot)
             BOOT=$2; shift 2 ;;
-        --fujinet-path)
+        -p|--port)
+            FUJINET_PORT=$2; shift 2 ;;
+        -F|--fujinet-path)
             FUJINET_FIRMWARE_PATH=$2; shift 2 ;;
-        --no-pkill)
+        -n|--no-pkill)
             PKILL_ENABLED=false; shift ;;
         -h|--help)
             usage; exit 0 ;;
