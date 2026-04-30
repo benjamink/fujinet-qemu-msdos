@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#set -x
+set -x
 
 # Configurable variables — all can be overridden via environment variables
 FUJINET_FIRMWARE_PATH=${FUJINET_FIRMWARE_PATH:-../fujinet-firmware}
@@ -65,11 +65,17 @@ if [[ "$(readlink fujinet)" != "$FUJINET_DISTFILES" ]]; then
 fi
 
 if [[ "$PKILL_ENABLED" == "true" ]]; then
-    pkill -f run-fujinet
+    pkill fujinet || true
+    pkill run-fujinet || true
 fi
 
 # Update the BOIP port in fnconfig.ini
-sed -i "/^\[BOIP\]/,/^\[/{s/^port=.*/port=$FUJINET_PORT/}" fujinet/fnconfig.ini
+# BSD sed (macOS) requires the backup suffix as a separate arg; GNU sed (Linux) requires it attached
+if sed --version &>/dev/null; then
+    sed -i "/^\[BOIP\]/,/^\[/{s/^port=.*/port=$FUJINET_PORT/}" fujinet/fnconfig.ini
+else
+    sed -i '' "/^\[BOIP\]/,/^\[/{s/^port=.*/port=$FUJINET_PORT/}" fujinet/fnconfig.ini
+fi
 
 # Start FujiNet in the background
 (cd fujinet && ./run-fujinet) &
